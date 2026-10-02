@@ -2,76 +2,83 @@ const container = document.querySelector(".items");
 const items = document.querySelectorAll(".item");
 
 let selectedItem = null;
-let offsetX = 0;
-let offsetY = 0;
+
+let startX = 0;
+let startY = 0;
+
+let currentX = 0;
+let currentY = 0;
 
 items.forEach((item) => {
 
-    item.addEventListener("mousedown", (e) => {
+  item.addEventListener("mousedown", (e) => {
 
-        selectedItem = item;
+    selectedItem = item;
 
-        const containerRect = container.getBoundingClientRect();
-        const itemRect = item.getBoundingClientRect();
+    startX = e.clientX;
+    startY = e.clientY;
 
-        // Convert grid position into absolute position
-        item.style.position = "absolute";
+    currentX = 0;
+    currentY = 0;
 
-        item.style.left =
-            `${itemRect.left - containerRect.left}px`;
+    container.classList.add("active");
 
-        item.style.top =
-            `${itemRect.top - containerRect.top}px`;
+    item.style.cursor = "grabbing";
 
-        // Remember where the mouse clicked inside the cube
-        offsetX = e.clientX - itemRect.left;
-        offsetY = e.clientY - itemRect.top;
+    e.preventDefault();
+  });
 
-        item.style.cursor = "grabbing";
-
-        container.classList.add("active");
-
-        e.preventDefault();
-    });
 });
+
 
 container.addEventListener("mousemove", (e) => {
 
-    if (!selectedItem) {
-        return;
-    }
+  if (!selectedItem) {
+    return;
+  }
 
-    const containerRect = container.getBoundingClientRect();
+  const dx = e.clientX - startX;
+  const dy = e.clientY - startY;
 
-    let newLeft =
-        e.clientX - containerRect.left - offsetX;
+  let newX = currentX + dx;
+  let newY = currentY + dy;
 
-    let newTop =
-        e.clientY - containerRect.top - offsetY;
+  const containerRect = container.getBoundingClientRect();
+  const itemRect = selectedItem.getBoundingClientRect();
 
-    // Keep the cube inside the container
-    const maxLeft =
-        container.clientWidth - selectedItem.offsetWidth;
+  // Container boundaries
+  const minX = containerRect.left - itemRect.left;
+  const maxX = containerRect.right - itemRect.right;
 
-    const maxTop =
-        container.clientHeight - selectedItem.offsetHeight;
+  const minY = containerRect.top - itemRect.top;
+  const maxY = containerRect.bottom - itemRect.bottom;
 
-    newLeft = Math.max(0, Math.min(newLeft, maxLeft));
-    newTop = Math.max(0, Math.min(newTop, maxTop));
+  // Keep cube inside container
+  newX = Math.max(minX, Math.min(newX, maxX));
+  newY = Math.max(minY, Math.min(newY, maxY));
 
-    selectedItem.style.left = `${newLeft}px`;
-    selectedItem.style.top = `${newTop}px`;
+  selectedItem.style.transform =
+    `translate(${newX}px, ${newY}px)`;
+
+  currentX = newX;
+  currentY = newY;
+
+  startX = e.clientX;
+  startY = e.clientY;
+
 });
+
 
 document.addEventListener("mouseup", () => {
 
-    if (!selectedItem) {
-        return;
-    }
+  if (!selectedItem) {
+    return;
+  }
 
-    selectedItem.style.cursor = "grab";
+  selectedItem.style.cursor = "grab";
 
-    selectedItem = null;
+  selectedItem = null;
 
-    container.classList.remove("active");
+  container.classList.remove("active");
+
 });
