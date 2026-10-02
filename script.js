@@ -5,24 +5,29 @@ let selectedItem = null;
 let offsetX = 0;
 let offsetY = 0;
 
-// Convert the initial items into positions inside the container
 items.forEach((item) => {
-    const containerRect = container.getBoundingClientRect();
-    const itemRect = item.getBoundingClientRect();
-
-    item.style.position = "absolute";
-
-    item.style.left = `${itemRect.left - containerRect.left}px`;
-    item.style.top = `${itemRect.top - containerRect.top}px`;
 
     item.addEventListener("mousedown", (e) => {
+
         selectedItem = item;
 
+        const containerRect = container.getBoundingClientRect();
         const itemRect = item.getBoundingClientRect();
 
-        // Remember where inside the cube the mouse was clicked
+        // Convert grid position into absolute position
+        item.style.position = "absolute";
+
+        item.style.left =
+            `${itemRect.left - containerRect.left}px`;
+
+        item.style.top =
+            `${itemRect.top - containerRect.top}px`;
+
+        // Remember where the mouse clicked inside the cube
         offsetX = e.clientX - itemRect.left;
         offsetY = e.clientY - itemRect.top;
+
+        item.style.cursor = "grabbing";
 
         container.classList.add("active");
 
@@ -30,8 +35,8 @@ items.forEach((item) => {
     });
 });
 
-// Move selected cube
 container.addEventListener("mousemove", (e) => {
+
     if (!selectedItem) {
         return;
     }
@@ -44,7 +49,7 @@ container.addEventListener("mousemove", (e) => {
     let newTop =
         e.clientY - containerRect.top - offsetY;
 
-    // Keep cube inside the container
+    // Keep the cube inside the container
     const maxLeft =
         container.clientWidth - selectedItem.offsetWidth;
 
@@ -58,10 +63,15 @@ container.addEventListener("mousemove", (e) => {
     selectedItem.style.top = `${newTop}px`;
 });
 
-// Drop cube
 document.addEventListener("mouseup", () => {
-    if (selectedItem) {
-        selectedItem = null;
-        container.classList.remove("active");
+
+    if (!selectedItem) {
+        return;
     }
+
+    selectedItem.style.cursor = "grab";
+
+    selectedItem = null;
+
+    container.classList.remove("active");
 });
